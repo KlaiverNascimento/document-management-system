@@ -11,22 +11,39 @@
 // usando multer com diskStorage. Não utilize provedores externos.
 
 const express = require('express');
+const { createDocumentsController } = require('./controllers/documents.controller');
+const { createDocumentsRepository } = require('./repositories/documents.repository');
+const { createDocumentsRouter } = require('./routes/documents.routes');
+const { createDocumentsService } = require('./services/documents.service');
+const { createDocumentsUploadMiddleware } = require('./middleware/documents-upload.middleware');
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+function createApp(options = {}) {
+  const app = express();
+  const repository = createDocumentsRepository(options.storageDir);
+  const service = createDocumentsService(repository);
+  const controller = createDocumentsController(service);
+  const uploadMiddleware = createDocumentsUploadMiddleware(repository.storageDir);
 
-app.use(express.json());
+  app.use(express.json());
 
-// Endpoint de verificação de saúde. As demais rotas (/upload, /documents,
-// /documents/:id/download) serão implementadas durante o Passo 2.
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
-});
+  app.get('/health', (req, res) => {
+    res.json({ status: 'ok' });
+  });
+
+  app.use(createDocumentsRouter(controller, uploadMiddleware));
+
+  return app;
+}
+
+const app = createApp();
 
 if (require.main === module) {
-  app.listen(PORT, () => {
+  const PORT = process.env.PORT || 3000;
+  const HOST = process.env.HOST || '127.0.0.1';
+  app.listen(PORT, HOST, () => {
     console.log(`DMS backend ouvindo na porta ${PORT}`);
   });
 }
 
 module.exports = app;
+module.exports.createApp = createApp;
