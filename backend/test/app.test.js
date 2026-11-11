@@ -20,19 +20,22 @@ async function startTestServer(t) {
   return { baseUrl: `http://127.0.0.1:${server.address().port}`, storageDir };
 }
 
+async function uploadTestDocument(baseUrl, name = 'documento.txt', content = 'conteudo') {
+  const form = new FormData();
+  form.append('file', new Blob([content], { type: 'text/plain' }), name);
+  const response = await fetch(`${baseUrl}/upload`, { method: 'POST', body: form });
+  assert.strictEqual(response.status, 201);
+  return (await response.json()).document;
+}
+
 test('o app backend é exportado', () => {
   assert.ok(app, 'o app deve estar definido');
   assert.strictEqual(typeof app, 'function', 'o app Express deve ser uma função');
 });
 
-test('faz upload, lista e baixa um documento', async (t) => {
+test('POST /upload grava o arquivo e retorna seus metadados', async (t) => {
   const { baseUrl, storageDir } = await startTestServer(t);
-  const form = new FormData();
-  form.append('file', new Blob(['conteudo de teste'], { type: 'text/plain' }), '../relatorio.txt');
-
-  const uploadResponse = await fetch(`${baseUrl}/upload`, { method: 'POST', body: form });
-  assert.strictEqual(uploadResponse.status, 201);
-  const { document } = await uploadResponse.json();
+  const document = await uploadTestDocument(baseUrl, '../relatorio.txt', 'conteudo de teste');
   assert.strictEqual(document.originalName, 'relatorio.txt');
   assert.strictEqual(document.size, 17);
   assert.strictEqual(document.owner, 'default');
@@ -41,11 +44,21 @@ test('faz upload, lista e baixa um documento', async (t) => {
 
   const storedFiles = await fs.readdir(storageDir);
   assert.deepStrictEqual(storedFiles, [document.id]);
+});
 
+test('GET /documents lista os metadados registrados', async (t) => {
+  const { baseUrl } = await startTestServer(t);
+  assert.deepStrictEqual(await (await fetch(`${baseUrl}/documents`)).json(), { documents: [] });
+
+  const document = await uploadTestDocument(baseUrl);
   const listResponse = await fetch(`${baseUrl}/documents`);
   assert.strictEqual(listResponse.status, 200);
   assert.deepStrictEqual(await listResponse.json(), { documents: [document] });
+});
 
+test('GET /documents/:id/download retorna o arquivo como anexo', async (t) => {
+  const { baseUrl } = await startTestServer(t);
+  const document = await uploadTestDocument(baseUrl, 'relatorio.txt', 'conteudo de teste');
   const downloadResponse = await fetch(`${baseUrl}/documents/${document.id}/download`);
   assert.strictEqual(downloadResponse.status, 200);
   assert.strictEqual(downloadResponse.headers.get('content-type'), 'application/octet-stream');
