@@ -17,6 +17,16 @@ function toPublicDocument(document) {
   };
 }
 
+async function removeStoredFile(storageDir, filename) {
+  try {
+    await fs.unlink(path.join(storageDir, filename));
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      throw error;
+    }
+  }
+}
+
 function createDocumentsRepository(storageDir) {
   const resolvedStorageDir = resolveStorageDirectory(storageDir);
   const documents = new Map();
@@ -24,9 +34,15 @@ function createDocumentsRepository(storageDir) {
   return {
     storageDir: resolvedStorageDir,
 
-    save(document) {
-      documents.set(document.id, document);
-      return toPublicDocument(document);
+    async save(document) {
+      try {
+        documents.set(document.id, document);
+        return toPublicDocument(document);
+      } catch (error) {
+        documents.delete(document.id);
+        await removeStoredFile(resolvedStorageDir, document.filename).catch(() => {});
+        throw error;
+      }
     },
 
     list() {
@@ -54,15 +70,6 @@ function createDocumentsRepository(storageDir) {
       return { document: toPublicDocument(document), filePath };
     },
 
-    async removeFile(filename) {
-      try {
-        await fs.unlink(path.join(resolvedStorageDir, filename));
-      } catch (error) {
-        if (error.code !== 'ENOENT') {
-          throw error;
-        }
-      }
-    },
   };
 }
 

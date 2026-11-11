@@ -45,7 +45,7 @@ Entregar uma aplicação web simples para que um usuário envie documentos, cons
 | RNF-02 | Uploads são gravados somente em disco local por `multer` configurado com `diskStorage`. Não usar armazenamento externo. |
 | RNF-03 | O diretório de armazenamento é configurável pela variável `STORAGE_DIR`; o padrão é `backend/storage`. O processo deve garantir que o diretório exista antes de gravar. |
 | RNF-04 | Metadados são mantidos em memória nesta fase. Eles são perdidos ao reiniciar o backend; os arquivos no disco não são automaticamente removidos. |
-| RNF-05 | A configuração operacional deve usar variáveis de ambiente, incluindo `PORT` (padrão `3000`) e `STORAGE_DIR`. |
+| RNF-05 | A configuração operacional deve usar variáveis de ambiente: `PORT` (padrão `3000`), `HOST` (padrão `127.0.0.1`) e `STORAGE_DIR`. O backend deve escutar apenas em loopback por padrão porque esta fase não tem autenticação. |
 | RNF-06 | O nome físico do arquivo é gerado pelo sistema a partir de um identificador seguro e único. Nunca concatenar o nome original diretamente ao caminho de armazenamento. |
 | RNF-07 | O serviço frontend chama `/api`; no desenvolvimento, o proxy Vite direciona para `http://localhost:3000` e remove o prefixo antes de encaminhar ao backend. |
 | RNF-08 | As rotas HTTP não contêm regras de negócio nem persistência. A direção das dependências é `routes -> controllers -> services -> repositories`. |

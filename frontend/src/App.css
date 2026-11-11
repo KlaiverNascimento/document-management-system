@@ -32,8 +32,7 @@ input {
 }
 
 button:focus-visible,
-a:focus-visible,
-input:focus-visible + span {
+a:focus-visible {
   outline: 3px solid #d88a48;
   outline-offset: 3px;
 }
@@ -228,6 +227,7 @@ h2 {
 }
 
 .drop-zone {
+  position: relative;
   display: flex;
   min-height: 88px;
   align-items: center;
@@ -237,6 +237,11 @@ h2 {
   background: rgba(255, 255, 255, 0.62);
   cursor: pointer;
   transition: border-color 140ms ease, background 140ms ease;
+}
+
+.drop-zone:focus-within {
+  outline: 3px solid #d88a48;
+  outline-offset: 3px;
 }
 
 .drop-zone:hover,
@@ -500,6 +505,31 @@ h2 {
   border-bottom: 1px solid var(--line);
   color: var(--muted);
   font-size: 13px;
+}
+
+.list-error,
+.list-inline-error {
+  color: #a83e32;
+  font-size: 13px;
+}
+
+.list-error {
+  display: flex;
+  min-height: 130px;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.list-error p,
+.list-inline-error {
+  margin: 0;
+}
+
+.list-inline-error {
+  padding: 10px 0;
 }
 
 .empty-state p {

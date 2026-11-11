@@ -1,23 +1,20 @@
 const path = require('node:path');
 
+function createDocumentRecord(file) {
+  return {
+    id: file.filename,
+    filename: file.filename,
+    originalName: path.basename(file.originalname.replace(/\\/g, '/')) || 'document',
+    size: file.size,
+    uploadedAt: new Date().toISOString(),
+    owner: 'default',
+  };
+}
+
 function createDocumentsService(repository) {
   return {
-    async upload(file) {
-      const document = {
-        id: file.filename,
-        filename: file.filename,
-        originalName: path.basename(file.originalname.replace(/\\/g, '/')) || 'document',
-        size: file.size,
-        uploadedAt: new Date().toISOString(),
-        owner: 'default',
-      };
-
-      try {
-        return repository.save(document);
-      } catch (error) {
-        await repository.removeFile(file.filename).catch(() => {});
-        throw error;
-      }
+    upload(file) {
+      return repository.save(createDocumentRecord(file));
     },
 
     list() {

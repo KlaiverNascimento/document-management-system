@@ -15,12 +15,14 @@ const { createDocumentsController } = require('./controllers/documents.controlle
 const { createDocumentsRepository } = require('./repositories/documents.repository');
 const { createDocumentsRouter } = require('./routes/documents.routes');
 const { createDocumentsService } = require('./services/documents.service');
+const { createDocumentsUploadMiddleware } = require('./middleware/documents-upload.middleware');
 
 function createApp(options = {}) {
   const app = express();
   const repository = createDocumentsRepository(options.storageDir);
   const service = createDocumentsService(repository);
   const controller = createDocumentsController(service);
+  const uploadMiddleware = createDocumentsUploadMiddleware(repository.storageDir);
 
   app.use(express.json());
 
@@ -28,7 +30,7 @@ function createApp(options = {}) {
     res.json({ status: 'ok' });
   });
 
-  app.use(createDocumentsRouter(controller, repository.storageDir));
+  app.use(createDocumentsRouter(controller, uploadMiddleware));
 
   return app;
 }
@@ -37,7 +39,8 @@ const app = createApp();
 
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
+  const HOST = process.env.HOST || '127.0.0.1';
+  app.listen(PORT, HOST, () => {
     console.log(`DMS backend ouvindo na porta ${PORT}`);
   });
 }

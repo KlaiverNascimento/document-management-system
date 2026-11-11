@@ -4,13 +4,13 @@ import { UploadComponent } from './components/UploadComponent.jsx';
 import { listDocuments } from './services/documentsApi.js';
 import './App.css';
 
-async function loadDocuments(setDocuments, setError, setLoading) {
+async function loadDocuments(setDocuments, setListError, setLoading) {
   setLoading(true);
-  setError('');
+  setListError('');
   try {
     setDocuments(await listDocuments());
   } catch (requestError) {
-    setError(requestError.message);
+    setListError(requestError.message);
   } finally {
     setLoading(false);
   }
@@ -19,14 +19,15 @@ async function loadDocuments(setDocuments, setError, setLoading) {
 export default function App() {
   const [documents, setDocuments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [listError, setListError] = useState('');
+  const [actionError, setActionError] = useState('');
 
   useEffect(() => {
-    void loadDocuments(setDocuments, setError, setIsLoading);
+    void loadDocuments(setDocuments, setListError, setIsLoading);
   }, []);
 
   function refreshDocuments() {
-    return loadDocuments(setDocuments, setError, setIsLoading);
+    return loadDocuments(setDocuments, setListError, setIsLoading);
   }
 
   return (
@@ -52,13 +53,14 @@ export default function App() {
 
       <UploadComponent onUploaded={refreshDocuments} />
 
-      {error && <p className="global-error" role="alert">{error}</p>}
+      {actionError && <p className="global-error" role="alert">{actionError}</p>}
 
       <DocumentList
         documents={documents}
         isLoading={isLoading}
+        error={listError}
         onRefresh={refreshDocuments}
-        onError={setError}
+        onError={setActionError}
       />
 
       <footer className="page-footer">

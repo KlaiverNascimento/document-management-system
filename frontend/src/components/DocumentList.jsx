@@ -1,4 +1,5 @@
 import { DownloadButton } from './DownloadButton.jsx';
+import { formatFileSize } from '../utils/formatFileSize.js';
 
 function formatDate(value) {
   return new Intl.DateTimeFormat('pt-BR', {
@@ -7,17 +8,7 @@ function formatDate(value) {
   }).format(new Date(value));
 }
 
-function formatFileSize(size) {
-  if (size < 1024) {
-    return `${size} B`;
-  }
-  if (size < 1024 * 1024) {
-    return `${(size / 1024).toFixed(0)} KiB`;
-  }
-  return `${(size / (1024 * 1024)).toFixed(1)} MiB`;
-}
-
-export function DocumentList({ documents, isLoading, onRefresh, onError }) {
+export function DocumentList({ documents, isLoading, error, onRefresh, onError }) {
   return (
     <section className="documents-section" aria-labelledby="documents-title">
       <div className="section-index"><span>02</span><i /></div>
@@ -33,8 +24,15 @@ export function DocumentList({ documents, isLoading, onRefresh, onError }) {
           </button>
         </div>
 
+        {error && documents.length > 0 && <p className="list-inline-error" role="alert">{error}</p>}
+
         {isLoading && documents.length === 0 ? (
           <div className="list-state" role="status">Carregando documentos<span className="loading-dots">...</span></div>
+        ) : error && documents.length === 0 ? (
+          <div className="list-error" role="alert">
+            <p>{error}</p>
+            <button type="button" className="refresh-button" onClick={onRefresh}>Tentar novamente</button>
+          </div>
         ) : documents.length === 0 ? (
           <div className="empty-state">
             <span className="empty-mark" aria-hidden="true">—</span>

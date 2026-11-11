@@ -1,14 +1,8 @@
 import { useRef, useState } from 'react';
 import { uploadDocument } from '../services/documentsApi.js';
+import { formatFileSize } from '../utils/formatFileSize.js';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
-
-function formatFileSize(size) {
-  if (size < 1024 * 1024) {
-    return `${Math.max(1, Math.round(size / 1024))} KiB`;
-  }
-  return `${(size / (1024 * 1024)).toFixed(1)} MiB`;
-}
 
 export function UploadComponent({ onUploaded }) {
   const inputRef = useRef(null);
